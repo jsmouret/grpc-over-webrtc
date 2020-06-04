@@ -37,11 +37,14 @@ func (s *signalingServer) Offer(ctx context.Context, request *signaling.OfferReq
 	return response, err
 }
 
-func startSignaling(p *grtc.Proxy) {
+func startSignaling(proxy *grtc.Proxy) {
+
+	signalingServer := &signalingServer{
+		proxy: proxy,
+	}
+
 	grpcServer := grpc.NewServer()
-	signaling.RegisterSignalingServiceServer(grpcServer, &signalingServer{
-		proxy: p,
-	})
+	signaling.RegisterSignalingServiceServer(grpcServer, signalingServer)
 
 	wrappedGrpc := grpcweb.WrapServer(grpcServer,
 		grpcweb.WithOriginFunc(func(origin string) bool { return true }))

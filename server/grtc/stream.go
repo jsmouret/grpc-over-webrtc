@@ -31,6 +31,15 @@ func newStream(channel *channel, routing *grtc.Routing, log *logrus.Entry) *stre
 	return s
 }
 
+func (s *stream) close() {
+	s.cancel()
+	s.channel.routeClose(s.routing)
+}
+
+func (s *stream) onRequest(request *grtc.Request) {
+	s.queue <- request
+}
+
 func (s *stream) run() {
 	for {
 		select {
@@ -40,15 +49,6 @@ func (s *stream) run() {
 			return
 		}
 	}
-}
-
-func (s *stream) close() {
-	s.cancel()
-	s.channel.routeClose(s.routing)
-}
-
-func (s *stream) onRequest(request *grtc.Request) {
-	s.queue <- request
 }
 
 func (s *stream) processRequest(request *grtc.Request) {

@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func newPeer(offer webrtc.SessionDescription, p *grtc.Proxy) (*webrtc.SessionDescription, error) {
+func newPeer(offer webrtc.SessionDescription, proxy *grtc.Proxy) (*webrtc.SessionDescription, error) {
 
 	peer, err := webrtc.NewPeerConnection(webrtc.Configuration{})
 	if err != nil {
@@ -15,7 +15,7 @@ func newPeer(offer webrtc.SessionDescription, p *grtc.Proxy) (*webrtc.SessionDes
 		return nil, err
 	}
 
-	peer.OnDataChannel(p.OnDataChannel)
+	peer.OnDataChannel(proxy.OnDataChannel)
 
 	err = peer.SetRemoteDescription(offer)
 	if err != nil {
