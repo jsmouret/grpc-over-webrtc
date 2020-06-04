@@ -76,7 +76,7 @@ export const App: React.FC = () => {
 							{message}
 						</Fragment>))}
 				</pre>
-				<button onClick={() => setMessages([])}>clear</button>
+				<button onClick={() => setMessages([])}>Clear</button>
 			</div>
 			<div>
 				{channel && <EchoClient channel={channel} log={log} />}

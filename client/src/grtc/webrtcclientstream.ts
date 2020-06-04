@@ -42,7 +42,7 @@ export class WebRtcClientStream<Request, Response>
 
 	on(eventType: any, callback: any) {
 		if (eventType === 'data') {
-			this.clientOnError = callback
+			this.clientOnData = callback
 		} else if (eventType === 'status') {
 			this.clientOnStatus = callback
 		} else if (eventType === 'error') {

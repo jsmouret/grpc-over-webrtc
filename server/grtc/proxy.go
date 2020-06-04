@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/pion/webrtc/v2"
 	"google.golang.org/grpc"
 )
@@ -13,13 +12,13 @@ import (
 type Proxy struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
-	handlers map[string]handler
+	handlers map[string]newWrapperFunc
 }
 
 // NewProxy creates a new Proxy
 func NewProxy() *Proxy {
 	p := &Proxy{
-		handlers: make(map[string]handler),
+		handlers: make(map[string]newWrapperFunc),
 	}
 	p.ctx, p.cancel = context.WithCancel(context.Background())
 	return p
@@ -30,22 +29,17 @@ func (p *Proxy) Stop() {
 	p.cancel()
 }
 
-func makeDec(request []byte) func(interface{}) error {
-	return func(in interface{}) error {
-		return proto.Unmarshal(request, in.(proto.Message))
-	}
-}
-
-// RegisterService is a callback used to register gRPC services
+// RegisterService is used to register gRPC services
 func (p *Proxy) RegisterService(sd *grpc.ServiceDesc, ss interface{}) {
-	for _, m := range sd.Methods {
-		method := m
-		path := fmt.Sprintf("/%v/%v", sd.ServiceName, method.MethodName)
-		p.handlers[path] = &unaryHandler{
-			callback: func(ctx context.Context, request []byte) (interface{}, error) {
-				return method.Handler(ss, ctx, makeDec(request), nil)
-			},
-		}
+	for _, it := range sd.Methods {
+		desc := it
+		path := fmt.Sprintf("/%v/%v", sd.ServiceName, desc.MethodName)
+		p.handlers[path] = newUnaryWrapper(ss, unaryHandler(desc.Handler))
+	}
+	for _, it := range sd.Streams {
+		desc := it
+		path := fmt.Sprintf("/%v/%v", sd.ServiceName, desc.StreamName)
+		p.handlers[path] = newStreamWrapper(ss, desc.Handler)
 	}
 }
 

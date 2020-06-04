@@ -16,7 +16,7 @@ type stream struct {
 	routing *grtc.Routing
 	log     *logrus.Entry
 	queue   chan *grtc.Request
-	handler handler
+	handler wrapper
 }
 
 func newStream(channel *channel, routing *grtc.Routing, log *logrus.Entry) *stream {
@@ -69,12 +69,12 @@ func (s *stream) processCall(call *grtc.Call) {
 	}
 	s.log = s.log.WithField("method", call.Method)
 
-	var ok bool
-	s.handler, ok = s.channel.proxy.handlers[call.Method]
+	handlerFunc, ok := s.channel.proxy.handlers[call.Method]
 	if !ok {
 		s.sendStatusCode(codes.Unimplemented, codes.Unimplemented.String())
 		return
 	}
+	s.handler = handlerFunc(s)
 }
 
 func (s *stream) processData(data *grtc.Data) {
@@ -82,7 +82,7 @@ func (s *stream) processData(data *grtc.Data) {
 		s.sendStatusCode(codes.InvalidArgument, "Call not started")
 		return
 	}
-	s.handler.onData(s, data.Data)
+	s.handler.onData(data.Data)
 }
 
 func (s *stream) sendBytes(bytes []byte) {

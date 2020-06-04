@@ -44,7 +44,7 @@ func (e *echoServer) EchoAbort(ctx context.Context, in *echo.EchoRequest) (*echo
 // One empty request, ZERO processing, followed by one empty response
 // (minimum effort to do message serialization).
 func (e *echoServer) NoOp(ctx context.Context, in *echo.Empty) (*echo.Empty, error) {
-	logrus.Info("noop")
+	logrus.Info("NoOp")
 	return nil, nil
 }
 

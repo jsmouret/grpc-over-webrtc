@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { adapter } from './grtc/adapter'
 import { WebRtcChannel } from './grtc/webrtcchannel'
 import { EchoServicePromiseClient } from './protos/echo/echo_grpc_web_pb'
-import { EchoRequest, Empty } from './protos/echo/echo_pb'
+import { EchoRequest, Empty, ServerStreamingEchoRequest } from './protos/echo/echo_pb'
 
 const codeToString = (code: number) => {
 	switch (code) {
@@ -32,8 +32,10 @@ export const EchoClient: React.FC<{
 	log: (...messages: string[]) => void
 }> = ({ channel, log }) => {
 
-	const [message, setMessage] = useState("hello")
 	const [client] = useState(adapter(channel, new EchoServicePromiseClient("")))
+	const [message, setMessage] = useState("hello")
+	const [messageCount, setMessageCount] = useState(5)
+	const [messageInterval, setMessageInterval] = useState(1000)
 
 	const logException = (prefix: string, e: any) =>
 		log(prefix, " exception:\n> ", codeToString(e.code), ": ", e.message)
@@ -76,15 +78,71 @@ export const EchoClient: React.FC<{
 		}
 	}
 
+	const serverStreamingEcho = async () => {
+		try {
+			const request = new ServerStreamingEchoRequest()
+			request.setMessage(message)
+			request.setMessageCount(messageCount)
+			request.setMessageInterval(messageInterval)
+
+			const stream = client.serverStreamingEcho(request)
+			stream.on('data', response => log("serverStreamingEcho data: ", response.getMessage()))
+			stream.on('status', status => log("serverStreamingEcho status ", codeToString(status.code), ": ", status.details))
+			stream.on('error', err => log("serverStreamingEcho error ", codeToString(err.code), ": ", err.message))
+			stream.on('end', () => log("serverStreamingEcho end"))
+
+		} catch (e) {
+			logException("serverStreamingEcho", e)
+		}
+	}
+
+	const serverStreamingEchoAbort = async () => {
+		try {
+			const request = new ServerStreamingEchoRequest()
+			request.setMessage(message)
+			request.setMessageCount(messageCount)
+			request.setMessageInterval(messageInterval)
+
+			const stream = client.serverStreamingEchoAbort(request)
+			stream.on('data', response => log("serverStreamingEchoAbort data: ", response.getMessage()))
+			stream.on('status', status => log("serverStreamingEchoAbort status ", codeToString(status.code), ": ", status.details))
+			stream.on('error', err => log("serverStreamingEchoAbort error ", codeToString(err.code), ": ", err.message))
+			stream.on('end', () => log("serverStreamingEchoAbort end"))
+
+		} catch (e) {
+			logException("serverStreamingEchoAbort", e)
+		}
+	}
+
 	return (<>
 		<h3>Echo Client</h3>
-		<input
-			value={message}
-			onChange={ev => setMessage(ev.target.value)}
-		/>
-		{' '}<button onClick={echo}>Echo</button>
-		{' '}<button onClick={echoAbort}>EchoAbort</button>
-		<br /><br />
-		<button onClick={noOp}>NoOp</button>
+		<table><tbody>
+			<tr><td>Message</td><td>
+				<input value={message}
+					onChange={ev => setMessage(ev.target.value)}
+				/>
+			</td></tr>
+			<tr><td>Message Count</td><td>
+				<input value={messageCount} type="number"
+					onChange={ev => setMessageCount(ev.target.valueAsNumber)}
+				/>
+			</td></tr>
+			<tr><td>Message Interval</td><td>
+				<input value={messageInterval} type="number"
+					onChange={ev => setMessageInterval(ev.target.valueAsNumber)}
+				/>
+			</td></tr>
+		</tbody></table>
+		<p>
+			<button onClick={echo}>Echo</button>{' '}
+			<button onClick={echoAbort}>EchoAbort</button>
+		</p>
+		<p>
+			<button onClick={noOp}>NoOp</button>
+		</p>
+		<p>
+			<button onClick={serverStreamingEcho}>ServerStreamingEcho</button>{' '}
+			<button onClick={serverStreamingEchoAbort}>ServerStreamingEchoAbort</button>
+		</p>
 	</>)
 }
