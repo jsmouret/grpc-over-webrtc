@@ -1,6 +1,6 @@
 import { AbstractClientBase, ClientReadableStream, Error, Status, StatusCode } from "grpc-web"
 import "webrtc-adapter"
-import * as grtc from "./protos/grtc/grtc_pb"
+import * as pb from "../protos/grtc/grtc_pb"
 import { WebRtcAbstractStream } from "./webrtcabstractstream"
 import { WebRtcChannel } from "./webrtcchannel"
 
@@ -58,14 +58,14 @@ export class WebRtcClientStream<Request, Response>
 		this.close()
 	}
 
-	onData(data: grtc.Data) {
+	onData(data: pb.Data) {
 		const rawData = data.getData_asU8()
 		const response = this.responseDeserializeFn(rawData)
 		if (this.clientOnData) this.clientOnData(response)
 		if (this.handlerOnData) this.handlerOnData(response)
 	}
 
-	onEnd(end: grtc.End) {
+	onEnd(end: pb.End) {
 		const status = end.getStatus()
 		if (!status || status.getCode() === StatusCode.OK) {
 			if (this.clientOnEnd) this.clientOnEnd()
@@ -86,7 +86,7 @@ export class WebRtcClientStream<Request, Response>
 	}
 
 	sendRequest(request: Request) {
-		const data = new grtc.Data()
+		const data = new pb.Data()
 		data.setData(this.requestSerializeFn(request))
 		this.sendData(data)
 	}

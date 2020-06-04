@@ -1,12 +1,13 @@
 package main
 
 import (
-	"server/protos/api"
+	"server/grtc"
+	echo "server/protos/echo"
 )
 
 func main() {
-	p := newProxy()
-	api.RegisterEchoServiceServer(p, newEcho())
+	p := grtc.NewProxy()
+	echo.RegisterEchoServiceServer(p, newEchoServer())
 
 	startSignaling(p)
 }

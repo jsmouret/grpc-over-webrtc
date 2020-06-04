@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api;
+package signaling;
 
 service SignalingService {
 	rpc Offer(OfferRequest) returns (OfferResponse);

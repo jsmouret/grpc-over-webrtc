@@ -1,4 +1,4 @@
-package main
+package grtc
 
 import (
 	"context"
@@ -13,14 +13,14 @@ import (
 type channel struct {
 	ctx     context.Context
 	cancel  context.CancelFunc
-	proxy   *proxy
+	proxy   *Proxy
 	rtc     *webrtc.DataChannel
 	streams map[int32]*stream
 	log     *logrus.Entry
 	mu      sync.Mutex
 }
 
-func newChannel(proxy *proxy, rtc *webrtc.DataChannel) *channel {
+func newChannel(proxy *Proxy, rtc *webrtc.DataChannel) *channel {
 	c := &channel{
 		proxy:   proxy,
 		rtc:     rtc,

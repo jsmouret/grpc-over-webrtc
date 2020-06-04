@@ -1,4 +1,4 @@
-package main
+package grtc
 
 import (
 	"context"
@@ -9,21 +9,24 @@ import (
 	"google.golang.org/grpc"
 )
 
-type proxy struct {
+// Proxy is the interface to gRPC over WebRTC
+type Proxy struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
 	handlers map[string]handler
 }
 
-func newProxy() *proxy {
-	p := &proxy{
+// NewProxy creates a new Proxy
+func NewProxy() *Proxy {
+	p := &Proxy{
 		handlers: make(map[string]handler),
 	}
 	p.ctx, p.cancel = context.WithCancel(context.Background())
 	return p
 }
 
-func (p *proxy) Stop() {
+// Stop gracefully stops a Proxy
+func (p *Proxy) Stop() {
 	p.cancel()
 }
 
@@ -33,18 +36,21 @@ func makeDec(request []byte) func(interface{}) error {
 	}
 }
 
-func (p *proxy) RegisterService(sd *grpc.ServiceDesc, ss interface{}) {
+// RegisterService is a callback used to register gRPC services
+func (p *Proxy) RegisterService(sd *grpc.ServiceDesc, ss interface{}) {
 	for _, m := range sd.Methods {
-		path := fmt.Sprintf("/%v/%v", sd.ServiceName, m.MethodName)
+		method := m
+		path := fmt.Sprintf("/%v/%v", sd.ServiceName, method.MethodName)
 		p.handlers[path] = &unaryHandler{
 			callback: func(ctx context.Context, request []byte) (interface{}, error) {
-				return m.Handler(ss, ctx, makeDec(request), nil)
+				return method.Handler(ss, ctx, makeDec(request), nil)
 			},
 		}
 	}
 }
 
-func (p *proxy) onDataChannel(rtc *webrtc.DataChannel) {
+// OnDataChannel binds a Proxy to a webrtc.DataChannel
+func (p *Proxy) OnDataChannel(rtc *webrtc.DataChannel) {
 	ch := newChannel(p, rtc)
 	rtc.OnOpen(ch.onOpen)
 	rtc.OnClose(ch.onClose)

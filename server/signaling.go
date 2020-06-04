@@ -5,7 +5,8 @@ import (
 	"net"
 	"net/http"
 
-	"server/protos/api"
+	"server/grtc"
+	"server/protos/signaling"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/pion/webrtc/v2"
@@ -17,11 +18,11 @@ const (
 	signalingPort = ":8080"
 )
 
-type signaling struct {
-	proxy *proxy
+type signalingServer struct {
+	proxy *grtc.Proxy
 }
 
-func (s *signaling) Offer(ctx context.Context, request *api.OfferRequest) (*api.OfferResponse, error) {
+func (s *signalingServer) Offer(ctx context.Context, request *signaling.OfferRequest) (*signaling.OfferResponse, error) {
 	offer := webrtc.SessionDescription{
 		Type: webrtc.SDPTypeOffer,
 		SDP:  request.Sdp,
@@ -29,16 +30,16 @@ func (s *signaling) Offer(ctx context.Context, request *api.OfferRequest) (*api.
 
 	answer, err := newPeer(offer, s.proxy)
 
-	response := &api.OfferResponse{}
+	response := &signaling.OfferResponse{}
 	if answer != nil {
 		response.Sdp = answer.SDP
 	}
 	return response, err
 }
 
-func startSignaling(p *proxy) {
+func startSignaling(p *grtc.Proxy) {
 	grpcServer := grpc.NewServer()
-	api.RegisterSignalingServiceServer(grpcServer, &signaling{
+	signaling.RegisterSignalingServiceServer(grpcServer, &signalingServer{
 		proxy: p,
 	})
 

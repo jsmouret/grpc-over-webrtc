@@ -1,9 +1,9 @@
 import React, { Fragment, useState } from 'react'
 import "webrtc-adapter"
 import { EchoClient } from './echo'
-import { SignalingServicePromiseClient } from './protos/api/signaling_grpc_web_pb'
-import { OfferRequest } from './protos/api/signaling_pb'
-import { WebRtcChannel } from './webrtcchannel'
+import { WebRtcChannel } from './grtc/webrtcchannel'
+import { SignalingServicePromiseClient } from './protos/signaling/signaling_grpc_web_pb'
+import { OfferRequest } from './protos/signaling/signaling_pb'
 
 export const App: React.FC = () => {
 	const [messages, setMessages] = useState<string[]>([])

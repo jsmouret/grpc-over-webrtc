@@ -1,5 +1,5 @@
 /**
- * @fileoverview gRPC-Web generated client stub for api
+ * @fileoverview gRPC-Web generated client stub for signaling
  * @enhanceable
  * @public
  */
@@ -16,7 +16,7 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 const proto = {};
-proto.api = require('./signaling_pb.js');
+proto.signaling = require('./signaling_pb.js');
 
 /**
  * @param {string} hostname
@@ -26,7 +26,7 @@ proto.api = require('./signaling_pb.js');
  * @struct
  * @final
  */
-proto.api.SignalingServiceClient =
+proto.signaling.SignalingServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -52,7 +52,7 @@ proto.api.SignalingServiceClient =
  * @struct
  * @final
  */
-proto.api.SignalingServicePromiseClient =
+proto.signaling.SignalingServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -73,58 +73,58 @@ proto.api.SignalingServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.api.OfferRequest,
- *   !proto.api.OfferResponse>}
+ *   !proto.signaling.OfferRequest,
+ *   !proto.signaling.OfferResponse>}
  */
 const methodDescriptor_SignalingService_Offer = new grpc.web.MethodDescriptor(
-  '/api.SignalingService/Offer',
+  '/signaling.SignalingService/Offer',
   grpc.web.MethodType.UNARY,
-  proto.api.OfferRequest,
-  proto.api.OfferResponse,
+  proto.signaling.OfferRequest,
+  proto.signaling.OfferResponse,
   /**
-   * @param {!proto.api.OfferRequest} request
+   * @param {!proto.signaling.OfferRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.api.OfferResponse.deserializeBinary
+  proto.signaling.OfferResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.api.OfferRequest,
- *   !proto.api.OfferResponse>}
+ *   !proto.signaling.OfferRequest,
+ *   !proto.signaling.OfferResponse>}
  */
 const methodInfo_SignalingService_Offer = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.api.OfferResponse,
+  proto.signaling.OfferResponse,
   /**
-   * @param {!proto.api.OfferRequest} request
+   * @param {!proto.signaling.OfferRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.api.OfferResponse.deserializeBinary
+  proto.signaling.OfferResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.api.OfferRequest} request The
+ * @param {!proto.signaling.OfferRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.api.OfferResponse)}
+ * @param {function(?grpc.web.Error, ?proto.signaling.OfferResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.api.OfferResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.signaling.OfferResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.api.SignalingServiceClient.prototype.offer =
+proto.signaling.SignalingServiceClient.prototype.offer =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/api.SignalingService/Offer',
+      '/signaling.SignalingService/Offer',
       request,
       metadata || {},
       methodDescriptor_SignalingService_Offer,
@@ -133,22 +133,22 @@ proto.api.SignalingServiceClient.prototype.offer =
 
 
 /**
- * @param {!proto.api.OfferRequest} request The
+ * @param {!proto.signaling.OfferRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.api.OfferResponse>}
+ * @return {!Promise<!proto.signaling.OfferResponse>}
  *     A native promise that resolves to the response
  */
-proto.api.SignalingServicePromiseClient.prototype.offer =
+proto.signaling.SignalingServicePromiseClient.prototype.offer =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/api.SignalingService/Offer',
+      '/signaling.SignalingService/Offer',
       request,
       metadata || {},
       methodDescriptor_SignalingService_Offer);
 };
 
 
-module.exports = proto.api;
+module.exports = proto.signaling;
 

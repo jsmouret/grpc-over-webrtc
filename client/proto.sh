@@ -11,7 +11,7 @@ protoc \
     -I=../protos \
     --js_out=import_style=commonjs,binary:${OUT_DIR} \
     --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:${OUT_DIR} \
-    api/echo.proto \
-    api/signaling.proto \
+    echo/echo.proto \
+    signaling/signaling.proto \
     grtc/grtc.proto \
     google/rpc/status.proto

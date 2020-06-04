@@ -1,6 +1,6 @@
 import { StatusCode } from "grpc-web"
 import "webrtc-adapter"
-import * as grtc from "./protos/grtc/grtc_pb"
+import * as pb from "../protos/grtc/grtc_pb"
 import { WebRtcAbstractStream } from "./webrtcabstractstream"
 
 export class WebRtcChannel {
@@ -22,11 +22,11 @@ export class WebRtcChannel {
 		this.setError(StatusCode.UNAVAILABLE, "Channel closed")
 	}
 
-	register(stream: WebRtcAbstractStream): grtc.Routing {
+	register(stream: WebRtcAbstractStream): pb.Routing {
 		const sequence = ++this.sequence
 		this.streams.set(sequence, stream)
 
-		const routing = new grtc.Routing()
+		const routing = new pb.Routing()
 		routing.setSequence(sequence)
 		return routing
 	}
@@ -35,7 +35,7 @@ export class WebRtcChannel {
 		this.streams.delete(stream.routing.getSequence())
 	}
 
-	send(request: grtc.Request) {
+	send(request: pb.Request) {
 		const data = request.serializeBinary()
 		this.channel.send(data)
 	}
@@ -53,7 +53,7 @@ export class WebRtcChannel {
 	}
 
 	onMessage(ev: MessageEvent) {
-		const response = grtc.Response.deserializeBinary(ev.data)
+		const response = pb.Response.deserializeBinary(ev.data)
 
 		const routing = response.getRouting()
 		if (!routing) {
@@ -69,10 +69,10 @@ export class WebRtcChannel {
 		}
 
 		switch (response.getTypeCase()) {
-			case grtc.Response.TypeCase.DATA:
+			case pb.Response.TypeCase.DATA:
 				stream.onData(response.getData()!)
 				break
-			case grtc.Response.TypeCase.END:
+			case pb.Response.TypeCase.END:
 				stream.onEnd(response.getEnd()!)
 				break
 		}

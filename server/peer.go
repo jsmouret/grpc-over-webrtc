@@ -1,11 +1,13 @@
 package main
 
 import (
+	"server/grtc"
+
 	"github.com/pion/webrtc/v2"
 	"github.com/sirupsen/logrus"
 )
 
-func newPeer(offer webrtc.SessionDescription, p *proxy) (*webrtc.SessionDescription, error) {
+func newPeer(offer webrtc.SessionDescription, p *grtc.Proxy) (*webrtc.SessionDescription, error) {
 
 	peer, err := webrtc.NewPeerConnection(webrtc.Configuration{})
 	if err != nil {
@@ -13,7 +15,7 @@ func newPeer(offer webrtc.SessionDescription, p *proxy) (*webrtc.SessionDescript
 		return nil, err
 	}
 
-	peer.OnDataChannel(p.onDataChannel)
+	peer.OnDataChannel(p.OnDataChannel)
 
 	err = peer.SetRemoteDescription(offer)
 	if err != nil {

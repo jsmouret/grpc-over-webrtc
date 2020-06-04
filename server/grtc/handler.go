@@ -1,7 +1,8 @@
-package main
+package grtc
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
@@ -24,14 +25,18 @@ func (h *unaryHandler) onData(s *stream, request []byte) {
 		return
 	}
 
-	if response != nil {
+	if !reflect.ValueOf(response).IsNil() {
 		data, err := proto.Marshal(response.(proto.Message))
 		if err != nil {
-			s.log.WithError(err).Error("proto.Marshal")
+			s.log.
+				WithError(err).
+				WithField("response", response).
+				Error("proto.Marshal")
 		} else {
 			s.sendBytes(data)
 		}
 	}
+
 	if err == nil {
 		s.sendStatusCode(codes.OK, codes.OK.String())
 	} else {
