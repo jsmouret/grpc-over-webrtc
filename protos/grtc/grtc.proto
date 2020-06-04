@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package grtc;
+
+import "google/rpc/status.proto";
+
+message Routing {
+	int32 sequence = 1;
+}
+
+message Request {
+	Routing routing = 1;
+	oneof type {
+		Call call = 2;
+		Data data = 3;
+		End end = 4;
+	}
+}
+
+message Response {
+	Routing routing = 1;
+	oneof type {
+		Data data = 2;
+		End end = 3;
+	}
+}
+
+message Call {
+	string method = 1;
+	// TODO: metadata
+}
+
+message Data {
+	bytes data = 1;
+}
+
+message End {
+	google.rpc.Status status = 1;
+	// TODO: trailing metadata
+}

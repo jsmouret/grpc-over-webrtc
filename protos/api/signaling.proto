@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package api;
+
+service SignalingService {
+	rpc Offer(OfferRequest) returns (OfferResponse);
+}
+
+message OfferRequest {
+	string sdp = 1;
+}
+
+message OfferResponse {
+	string sdp = 1;
+}
