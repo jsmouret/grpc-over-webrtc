@@ -66,13 +66,22 @@ export class WebRtcClientStream<Request, Response>
 	}
 
 	onEnd(end: pb.End) {
-		const status = end.getStatus()
-		if (!status || status.getCode() === StatusCode.OK) {
-			if (this.clientOnEnd) this.clientOnEnd()
-			if (this.handlerOnEnd) this.handlerOnEnd()
-		} else {
-			this.onError(status.getCode(), status.getMessage())
+		const status: Status = {
+			code: StatusCode.OK,
+			details: "",
 		}
+
+		const endStatus = end.getStatus()
+		if (endStatus) {
+			status.code = endStatus.getCode()
+			status.details = endStatus.getMessage()
+		}
+
+		if (this.clientOnStatus) this.clientOnStatus(status)
+		if (this.handlerOnStatus) this.handlerOnStatus(status)
+
+		if (this.clientOnEnd) this.clientOnEnd()
+		if (this.handlerOnEnd) this.handlerOnEnd()
 		this.close()
 	}
 

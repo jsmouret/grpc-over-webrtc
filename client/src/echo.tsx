@@ -87,8 +87,8 @@ export const EchoClient: React.FC<{
 
 			const stream = client.serverStreamingEcho(request)
 			stream.on('data', response => log("serverStreamingEcho data: ", response.getMessage()))
-			stream.on('status', status => log("serverStreamingEcho status ", codeToString(status.code), ": ", status.details))
-			stream.on('error', err => log("serverStreamingEcho error ", codeToString(err.code), ": ", err.message))
+			stream.on('status', status => log("serverStreamingEcho status ", codeToString(status.code), ": '", status.details, "'"))
+			stream.on('error', err => log("serverStreamingEcho error ", codeToString(err.code), ": '", err.message, "'"))
 			stream.on('end', () => log("serverStreamingEcho end"))
 
 		} catch (e) {
@@ -105,8 +105,8 @@ export const EchoClient: React.FC<{
 
 			const stream = client.serverStreamingEchoAbort(request)
 			stream.on('data', response => log("serverStreamingEchoAbort data: ", response.getMessage()))
-			stream.on('status', status => log("serverStreamingEchoAbort status ", codeToString(status.code), ": ", status.details))
-			stream.on('error', err => log("serverStreamingEchoAbort error ", codeToString(err.code), ": ", err.message))
+			stream.on('status', status => log("serverStreamingEchoAbort status ", codeToString(status.code), ": '", status.details, "'"))
+			stream.on('error', err => log("serverStreamingEchoAbort error ", codeToString(err.code), ": '", err.message, "'"))
 			stream.on('end', () => log("serverStreamingEchoAbort end"))
 
 		} catch (e) {
