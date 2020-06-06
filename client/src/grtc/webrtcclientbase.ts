@@ -27,9 +27,9 @@ export class WebRtcClientBase implements AbstractClientBase {
 		})
 
 		let result: Response
-		stream.handlerOnData = (response) => result = response
-		stream.handlerOnEnd = () => doResolve(result)
-		stream.handlerOnError = (err) => doReject(err)
+		stream.ondata = (response) => result = response
+		stream.onend = () => doResolve(result)
+		stream.onerror = (err) => doReject(err)
 
 		stream.sendCall(method, metadata)
 		stream.sendRequest(request)
@@ -49,9 +49,9 @@ export class WebRtcClientBase implements AbstractClientBase {
 
 		let result: Response
 		let error: Error
-		stream.handlerOnData = (response) => result = response
-		stream.handlerOnEnd = () => callback(error, result)
-		stream.handlerOnError = (err) => callback(err, result)
+		stream.ondata = (response) => result = response
+		stream.onend = () => callback(error, result)
+		stream.onerror = (err) => callback(err, result)
 
 		stream.sendCall(method, metadata)
 		stream.sendRequest(request)

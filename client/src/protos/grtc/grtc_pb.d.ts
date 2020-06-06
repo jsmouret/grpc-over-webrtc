@@ -114,8 +114,28 @@ export namespace Response {
   }
 }
 
+export class Strings extends jspb.Message {
+  getValuesList(): Array<string>;
+  setValuesList(value: Array<string>): Strings;
+  clearValuesList(): Strings;
+  addValues(value: string, index?: number): Strings;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Strings.AsObject;
+  static toObject(includeInstance: boolean, msg: Strings): Strings.AsObject;
+  static serializeBinaryToWriter(message: Strings, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Strings;
+  static deserializeBinaryFromReader(message: Strings, reader: jspb.BinaryReader): Strings;
+}
+
+export namespace Strings {
+  export type AsObject = {
+    valuesList: Array<string>,
+  }
+}
+
 export class Metadata extends jspb.Message {
-  getMdMap(): jspb.Map<string, string>;
+  getMdMap(): jspb.Map<string, Strings>;
   clearMdMap(): Metadata;
 
   serializeBinary(): Uint8Array;
@@ -128,7 +148,7 @@ export class Metadata extends jspb.Message {
 
 export namespace Metadata {
   export type AsObject = {
-    mdMap: Array<[string, string]>,
+    mdMap: Array<[string, Strings.AsObject]>,
   }
 }
 

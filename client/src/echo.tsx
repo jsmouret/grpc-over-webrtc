@@ -1,7 +1,7 @@
-import { Status } from 'grpc-web'
+import { ClientReadableStream } from 'grpc-web'
 import React, { useState } from 'react'
 import { EchoServicePromiseClient } from './protos/echo/echo_grpc_web_pb'
-import { EchoRequest, Empty, ServerStreamingEchoRequest } from './protos/echo/echo_pb'
+import { EchoRequest, Empty, ServerStreamingEchoRequest, ServerStreamingEchoResponse } from './protos/echo/echo_pb'
 
 const codeToString = (code: number) => {
 	switch (code) {
@@ -26,6 +26,26 @@ const codeToString = (code: number) => {
 	}
 }
 
+type logFunction = (...messages: string[]) => void
+
+const logStream = (log: logFunction, prefix: string, stream: ClientReadableStream<ServerStreamingEchoResponse>) => {
+	stream.on('data', response => log(prefix, " data: ", response.getMessage()))
+	stream.on('status', status => {
+		log(prefix, " status ", codeToString(status.code), ": '", status.details, "'")
+		if (status.metadata) {
+			Object.keys(status.metadata).forEach(key =>
+				log(prefix, " metadata[", key, "]='", status.metadata![key])
+			)
+		}
+	})
+	stream.on('error', err => log("serverStreamingEcho error ", codeToString(err.code), ": '", err.message, "'"))
+	stream.on('end', () => log(prefix, " end"))
+}
+
+const logException = (log: logFunction, prefix: string, e: any) =>
+	log(prefix, " exception:\n> ", codeToString(e.code), ": ", e.message)
+
+
 export const EchoClient: React.FC<{
 	client: EchoServicePromiseClient
 	log: (...messages: string[]) => void
@@ -35,29 +55,16 @@ export const EchoClient: React.FC<{
 	const [messageCount, setMessageCount] = useState(5)
 	const [messageInterval, setMessageInterval] = useState(1000)
 
-	const logStatus = (prefix: string, status: Status) => {
-		log(prefix, " status ", codeToString(status.code), ": '", status.details, "'")
-		if (status.metadata) {
-			Object.keys(status.metadata).forEach(key =>
-				log(prefix, " metadata[", key, "]='", status.metadata![key])
-			)
-		}
-	}
-
-	const logException = (prefix: string, e: any) =>
-		log(prefix, " exception:\n> ", codeToString(e.code), ": ", e.message)
-
 	const echo = async () => {
 		try {
 			const request = new EchoRequest()
 			request.setMessage(message)
 
 			const response = await client.echo(request)
-			log("echo: ", response.getMessage(),
-				" #", response.getMessageCount().toString())
+			log("echo: ", response.getMessage(), " #", response.getMessageCount().toString())
 
 		} catch (e) {
-			logException("echo", e)
+			logException(log, "echo", e)
 		}
 	}
 
@@ -67,11 +74,10 @@ export const EchoClient: React.FC<{
 			request.setMessage(message)
 
 			const response = await client.echoAbort(request)
-			log("echoAbort: ", response.getMessage(),
-				" #", response.getMessageCount().toString())
+			log("echoAbort: ", response.getMessage(), " #", response.getMessageCount().toString())
 
 		} catch (e) {
-			logException("echoAbort", e)
+			logException(log, "echoAbort", e)
 		}
 	}
 
@@ -81,7 +87,7 @@ export const EchoClient: React.FC<{
 			await client.noOp(request)
 			log("noOp")
 		} catch (e) {
-			logException("noOp", e)
+			logException(log, "noOp", e)
 		}
 	}
 
@@ -93,13 +99,10 @@ export const EchoClient: React.FC<{
 			request.setMessageInterval(messageInterval)
 
 			const stream = client.serverStreamingEcho(request)
-			stream.on('data', response => log("serverStreamingEcho data: ", response.getMessage()))
-			stream.on('status', status => logStatus("serverStreamingEcho", status))
-			stream.on('error', err => log("serverStreamingEcho error ", codeToString(err.code), ": '", err.message, "'"))
-			stream.on('end', () => log("serverStreamingEcho end"))
+			logStream(log, "serverStreamingEcho", stream)
 
 		} catch (e) {
-			logException("serverStreamingEcho", e)
+			logException(log, "serverStreamingEcho", e)
 		}
 	}
 
@@ -111,13 +114,9 @@ export const EchoClient: React.FC<{
 			request.setMessageInterval(messageInterval)
 
 			const stream = client.serverStreamingEchoAbort(request)
-			stream.on('data', response => log("serverStreamingEchoAbort data: ", response.getMessage()))
-			stream.on('status', status => logStatus("serverStreamingEchoAbort", status))
-			stream.on('error', err => log("serverStreamingEchoAbort error ", codeToString(err.code), ": '", err.message, "'"))
-			stream.on('end', () => log("serverStreamingEchoAbort end"))
-
+			logStream(log, "serverStreamingEchoAbort", stream)
 		} catch (e) {
-			logException("serverStreamingEchoAbort", e)
+			logException(log, "serverStreamingEchoAbort", e)
 		}
 	}
 

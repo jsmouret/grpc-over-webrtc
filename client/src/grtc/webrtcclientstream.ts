@@ -1,6 +1,6 @@
 import { AbstractClientBase, ClientReadableStream, Error, Status, StatusCode } from "grpc-web"
 import "webrtc-adapter"
-import * as pb from "../protos/grtc/grtc_pb"
+import * as grtc from "../protos/grtc/grtc_pb"
 import { WebRtcAbstractStream } from "./webrtcabstractstream"
 import { WebRtcChannel } from "./webrtcchannel"
 
@@ -23,17 +23,10 @@ export class WebRtcClientStream<Request, Response>
 	requestSerializeFn: (request: Request) => Uint8Array
 	responseDeserializeFn: (bytes: Uint8Array) => Response
 
-	// Callbacks for WebRtcClientBase
-	handlerOnData: ((response: Response) => void) | null = null;
-	handlerOnStatus: ((status: Status) => void) | null = null;
-	handlerOnError: ((err: Error) => void) | null = null;
-	handlerOnEnd: (() => void) | null = null;
-
-	// Callbacks for user
-	clientOnData: ((response: Response) => void) | null = null;
-	clientOnStatus: ((status: Status) => void) | null = null;
-	clientOnError: ((err: Error) => void) | null = null;
-	clientOnEnd: (() => void) | null = null;
+	ondata: ((response: Response) => void) | null = null;
+	onstatus: ((status: Status) => void) | null = null;
+	onerror: ((err: Error) => void) | null = null;
+	onend: (() => void) | null = null;
 
 	on(type: "data", callback: (response: Response) => void): ClientReadableStream<Response>
 	on(type: "status", callback: (status: Status) => void): ClientReadableStream<Response>
@@ -42,13 +35,13 @@ export class WebRtcClientStream<Request, Response>
 
 	on(eventType: any, callback: any) {
 		if (eventType === 'data') {
-			this.clientOnData = callback
+			this.ondata = callback
 		} else if (eventType === 'status') {
-			this.clientOnStatus = callback
+			this.onstatus = callback
 		} else if (eventType === 'error') {
-			this.clientOnError = callback
+			this.onerror = callback
 		} else if (eventType === 'end') {
-			this.clientOnEnd = callback
+			this.onend = callback
 		}
 		return this
 	}
@@ -58,14 +51,13 @@ export class WebRtcClientStream<Request, Response>
 		this.close()
 	}
 
-	onData(data: pb.Data) {
+	onData(data: grtc.Data) {
 		const rawData = data.getData_asU8()
 		const response = this.responseDeserializeFn(rawData)
-		if (this.clientOnData) this.clientOnData(response)
-		if (this.handlerOnData) this.handlerOnData(response)
+		if (this.ondata) this.ondata(response)
 	}
 
-	onEnd(end: pb.End) {
+	onEnd(end: grtc.End) {
 		const status: Status = {
 			code: StatusCode.OK,
 			details: "",
@@ -73,16 +65,34 @@ export class WebRtcClientStream<Request, Response>
 
 		const endStatus = end.getStatus()
 		if (endStatus) {
-			console.log(endStatus)
 			status.code = endStatus.getCode()
 			status.details = endStatus.getMessage()
 		}
 
-		if (this.clientOnStatus) this.clientOnStatus(status)
-		if (this.handlerOnStatus) this.handlerOnStatus(status)
+		const metadata = end.getTrailer()
+		if (metadata) {
+			// grpc-web uses map<string, string>
+			// but grpc-go uses map<string, []string>
+			status.metadata = {}
+			metadata.getMdMap().forEach((entry, key) =>
+				entry.getValuesList().forEach(value => {
+					status.metadata![key] = value
+				})
+			)
+		}
 
-		if (this.clientOnEnd) this.clientOnEnd()
-		if (this.handlerOnEnd) this.handlerOnEnd()
+		if (status.code === StatusCode.OK) {
+			if (this.onstatus) this.onstatus(status)
+			if (this.onend) this.onend()
+		} else {
+			if (this.onerror) this.onerror({
+				code: status.code,
+				message: status.details,
+				//@ts-ignore (type missing)
+				metadata: status.metadata,
+			})
+		}
+
 		this.close()
 	}
 
@@ -91,12 +101,11 @@ export class WebRtcClientStream<Request, Response>
 			code: statusCode,
 			message: message,
 		}
-		if (this.clientOnError) this.clientOnError(error)
-		if (this.handlerOnError) this.handlerOnError(error)
+		if (this.onerror) this.onerror(error)
 	}
 
 	sendRequest(request: Request) {
-		const data = new pb.Data()
+		const data = new grtc.Data()
 		data.setData(this.requestSerializeFn(request))
 		this.sendData(data)
 	}
