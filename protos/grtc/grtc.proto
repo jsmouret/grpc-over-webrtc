@@ -20,7 +20,7 @@ message Request {
 message Response {
 	Routing routing = 1;
 	oneof type {
-		Header header = 2;
+		Begin begin = 2;
 		Data data = 3;
 		End end = 4;
 	}
@@ -40,8 +40,8 @@ message Call {
 	// TODO: deadline
 }
 
-message Header {
-	Metadata metadata = 2;
+message Begin {
+	Metadata header = 1;
 }
 
 message Data {

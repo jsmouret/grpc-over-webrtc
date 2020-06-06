@@ -73,10 +73,10 @@ export class Response extends jspb.Message {
   hasRouting(): boolean;
   clearRouting(): Response;
 
-  getHeader(): Header | undefined;
-  setHeader(value?: Header): Response;
-  hasHeader(): boolean;
-  clearHeader(): Response;
+  getBegin(): Begin | undefined;
+  setBegin(value?: Begin): Response;
+  hasBegin(): boolean;
+  clearBegin(): Response;
 
   getData(): Data | undefined;
   setData(value?: Data): Response;
@@ -101,14 +101,14 @@ export class Response extends jspb.Message {
 export namespace Response {
   export type AsObject = {
     routing?: Routing.AsObject,
-    header?: Header.AsObject,
+    begin?: Begin.AsObject,
     data?: Data.AsObject,
     end?: End.AsObject,
   }
 
   export enum TypeCase { 
     TYPE_NOT_SET = 0,
-    HEADER = 2,
+    BEGIN = 2,
     DATA = 3,
     END = 4,
   }
@@ -176,23 +176,23 @@ export namespace Call {
   }
 }
 
-export class Header extends jspb.Message {
-  getMetadata(): Metadata | undefined;
-  setMetadata(value?: Metadata): Header;
-  hasMetadata(): boolean;
-  clearMetadata(): Header;
+export class Begin extends jspb.Message {
+  getHeader(): Metadata | undefined;
+  setHeader(value?: Metadata): Begin;
+  hasHeader(): boolean;
+  clearHeader(): Begin;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): Header.AsObject;
-  static toObject(includeInstance: boolean, msg: Header): Header.AsObject;
-  static serializeBinaryToWriter(message: Header, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): Header;
-  static deserializeBinaryFromReader(message: Header, reader: jspb.BinaryReader): Header;
+  toObject(includeInstance?: boolean): Begin.AsObject;
+  static toObject(includeInstance: boolean, msg: Begin): Begin.AsObject;
+  static serializeBinaryToWriter(message: Begin, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Begin;
+  static deserializeBinaryFromReader(message: Begin, reader: jspb.BinaryReader): Begin;
 }
 
-export namespace Header {
+export namespace Begin {
   export type AsObject = {
-    metadata?: Metadata.AsObject,
+    header?: Metadata.AsObject,
   }
 }
 

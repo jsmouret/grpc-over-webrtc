@@ -21,15 +21,15 @@ var (
 )
 
 type stream struct {
-	ctx        context.Context
-	cancel     context.CancelFunc
-	channel    *channel
-	routing    *grtc.Routing
-	log        *logrus.Entry
-	recv       chan []byte
-	headerSent bool
-	header     metadata.MD
-	trailer    metadata.MD
+	ctx      context.Context
+	cancel   context.CancelFunc
+	channel  *channel
+	routing  *grtc.Routing
+	log      *logrus.Entry
+	recv     chan []byte
+	hasBegun bool
+	header   metadata.MD
+	trailer  metadata.MD
 }
 
 func newStream(channel *channel, routing *grtc.Routing, log *logrus.Entry) *stream {
@@ -86,7 +86,7 @@ func makeMetadata(md metadata.MD) *grtc.Metadata {
 }
 
 func (s *stream) closeErr(err error) {
-	s.sendHeader(false)
+	s.beginMaybe()
 	s.channel.writeEnd(s.routing, &grtc.End{
 		Status:  status.Convert(err).Proto(),
 		Trailer: makeMetadata(s.trailer),
@@ -94,17 +94,16 @@ func (s *stream) closeErr(err error) {
 	s.close()
 }
 
-func (s *stream) sendHeader(force bool) error {
-	if s.headerSent {
-		return ErrIllegalHeaderWrite
+func (s *stream) beginMaybe() error {
+	if !s.hasBegun {
+		s.hasBegun = true
+		if s.header != nil {
+			return s.channel.writeBegin(s.routing, &grtc.Begin{
+				Header: makeMetadata(s.header),
+			})
+		}
 	}
-	s.headerSent = true
-	if s.header == nil && !force {
-		return nil
-	}
-	return s.channel.writeHeader(s.routing, &grtc.Header{
-		Metadata: makeMetadata(s.header),
-	})
+	return nil
 }
 
 //
@@ -118,7 +117,7 @@ func (s *stream) sendHeader(force bool) error {
 //  - The first response is sent out;
 //  - An RPC status is sent out (error or success).
 func (s *stream) SetHeader(header metadata.MD) error {
-	if s.headerSent {
+	if s.hasBegun {
 		return ErrIllegalHeaderWrite
 	}
 	if s.header == nil {
@@ -137,7 +136,7 @@ func (s *stream) SendHeader(header metadata.MD) error {
 	if err != nil {
 		return err
 	}
-	return s.sendHeader(true)
+	return s.beginMaybe()
 }
 
 // SetTrailer sets the trailer metadata which will be sent with the RPC status.
@@ -169,20 +168,23 @@ func (s *stream) Context() context.Context {
 // It is safe to have a goroutine calling SendMsg and another goroutine
 // calling RecvMsg on the same stream at the same time, but it is not safe
 // to call SendMsg on the same stream in different goroutines.
-func (s *stream) SendMsg(m interface{}) error {
-	s.sendHeader(false)
+func (s *stream) SendMsg(m interface{}) (err error) {
+	defer func() {
+		if err != nil {
+			s.closeErr(err)
+		}
+	}()
 
-	data, err := proto.Marshal(m.(proto.Message))
+	err = s.beginMaybe()
 	if err == nil {
-		err = s.channel.writeData(s.routing, &grtc.Data{
-			Data: data,
-		})
+		data, err := proto.Marshal(m.(proto.Message))
+		if err == nil {
+			err = s.channel.writeData(s.routing, &grtc.Data{
+				Data: data,
+			})
+		}
 	}
-
-	if err != nil {
-		s.closeErr(err)
-	}
-	return err
+	return
 }
 
 // RecvMsg blocks until it receives a message into m or the stream is

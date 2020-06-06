@@ -78,11 +78,11 @@ func (c *channel) closeStream(routing *grtc.Routing) {
 	c.mu.Unlock()
 }
 
-func (c *channel) writeHeader(routing *grtc.Routing, header *grtc.Header) error {
+func (c *channel) writeBegin(routing *grtc.Routing, begin *grtc.Begin) error {
 	return c.writeResponse(&grtc.Response{
 		Routing: routing,
-		Type: &grtc.Response_Header{
-			Header: header,
+		Type: &grtc.Response_Begin{
+			Begin: begin,
 		},
 	})
 }
