@@ -69,6 +69,9 @@ export class WebRtcChannel {
 		}
 
 		switch (response.getTypeCase()) {
+			case pb.Response.TypeCase.HEADER:
+				// TODO: on('header') maybe?
+				break
 			case pb.Response.TypeCase.DATA:
 				stream.onData(response.getData()!)
 				break

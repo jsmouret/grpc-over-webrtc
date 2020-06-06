@@ -48,10 +48,9 @@ export class WebRtcClientBase implements AbstractClientBase {
 		const stream = new WebRtcClientStream<Request, Response>(this.channel, methodInfo)
 
 		let result: Response
+		let error: Error
 		stream.handlerOnData = (response) => result = response
-		stream.handlerOnEnd = () =>
-			//@ts-ignore (callback's err type should be Error|null)
-			callback(null, result)
+		stream.handlerOnEnd = () => callback(error, result)
 		stream.handlerOnError = (err) => callback(err, result)
 
 		stream.sendCall(method, metadata)

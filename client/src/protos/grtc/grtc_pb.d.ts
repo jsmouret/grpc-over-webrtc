@@ -73,6 +73,11 @@ export class Response extends jspb.Message {
   hasRouting(): boolean;
   clearRouting(): Response;
 
+  getHeader(): Header | undefined;
+  setHeader(value?: Header): Response;
+  hasHeader(): boolean;
+  clearHeader(): Response;
+
   getData(): Data | undefined;
   setData(value?: Data): Response;
   hasData(): boolean;
@@ -96,20 +101,45 @@ export class Response extends jspb.Message {
 export namespace Response {
   export type AsObject = {
     routing?: Routing.AsObject,
+    header?: Header.AsObject,
     data?: Data.AsObject,
     end?: End.AsObject,
   }
 
   export enum TypeCase { 
     TYPE_NOT_SET = 0,
-    DATA = 2,
-    END = 3,
+    HEADER = 2,
+    DATA = 3,
+    END = 4,
+  }
+}
+
+export class Metadata extends jspb.Message {
+  getMdMap(): jspb.Map<string, string>;
+  clearMdMap(): Metadata;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Metadata.AsObject;
+  static toObject(includeInstance: boolean, msg: Metadata): Metadata.AsObject;
+  static serializeBinaryToWriter(message: Metadata, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Metadata;
+  static deserializeBinaryFromReader(message: Metadata, reader: jspb.BinaryReader): Metadata;
+}
+
+export namespace Metadata {
+  export type AsObject = {
+    mdMap: Array<[string, string]>,
   }
 }
 
 export class Call extends jspb.Message {
   getMethod(): string;
   setMethod(value: string): Call;
+
+  getMetadata(): Metadata | undefined;
+  setMetadata(value?: Metadata): Call;
+  hasMetadata(): boolean;
+  clearMetadata(): Call;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Call.AsObject;
@@ -122,6 +152,27 @@ export class Call extends jspb.Message {
 export namespace Call {
   export type AsObject = {
     method: string,
+    metadata?: Metadata.AsObject,
+  }
+}
+
+export class Header extends jspb.Message {
+  getMetadata(): Metadata | undefined;
+  setMetadata(value?: Metadata): Header;
+  hasMetadata(): boolean;
+  clearMetadata(): Header;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Header.AsObject;
+  static toObject(includeInstance: boolean, msg: Header): Header.AsObject;
+  static serializeBinaryToWriter(message: Header, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Header;
+  static deserializeBinaryFromReader(message: Header, reader: jspb.BinaryReader): Header;
+}
+
+export namespace Header {
+  export type AsObject = {
+    metadata?: Metadata.AsObject,
   }
 }
 
@@ -151,6 +202,11 @@ export class End extends jspb.Message {
   hasStatus(): boolean;
   clearStatus(): End;
 
+  getTrailer(): Metadata | undefined;
+  setTrailer(value?: Metadata): End;
+  hasTrailer(): boolean;
+  clearTrailer(): End;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): End.AsObject;
   static toObject(includeInstance: boolean, msg: End): End.AsObject;
@@ -162,6 +218,7 @@ export class End extends jspb.Message {
 export namespace End {
   export type AsObject = {
     status?: google_rpc_status_pb.Status.AsObject,
+    trailer?: Metadata.AsObject,
   }
 }
 

@@ -73,6 +73,7 @@ export class WebRtcClientStream<Request, Response>
 
 		const endStatus = end.getStatus()
 		if (endStatus) {
+			console.log(endStatus)
 			status.code = endStatus.getCode()
 			status.details = endStatus.getMessage()
 		}

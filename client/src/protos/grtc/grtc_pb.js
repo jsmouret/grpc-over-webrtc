@@ -15,6 +15,8 @@ var google_rpc_status_pb = require('../google/rpc/status_pb.js');
 goog.exportSymbol('proto.grtc.Call', null, global);
 goog.exportSymbol('proto.grtc.Data', null, global);
 goog.exportSymbol('proto.grtc.End', null, global);
+goog.exportSymbol('proto.grtc.Header', null, global);
+goog.exportSymbol('proto.grtc.Metadata', null, global);
 goog.exportSymbol('proto.grtc.Request', null, global);
 goog.exportSymbol('proto.grtc.Response', null, global);
 goog.exportSymbol('proto.grtc.Routing', null, global);
@@ -504,15 +506,16 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.grtc.Response.oneofGroups_ = [[2,3]];
+proto.grtc.Response.oneofGroups_ = [[2,3,4]];
 
 /**
  * @enum {number}
  */
 proto.grtc.Response.TypeCase = {
   TYPE_NOT_SET: 0,
-  DATA: 2,
-  END: 3
+  HEADER: 2,
+  DATA: 3,
+  END: 4
 };
 
 /**
@@ -552,6 +555,7 @@ proto.grtc.Response.prototype.toObject = function(opt_includeInstance) {
 proto.grtc.Response.toObject = function(includeInstance, msg) {
   var f, obj = {
     routing: (f = msg.getRouting()) && proto.grtc.Routing.toObject(includeInstance, f),
+    header: (f = msg.getHeader()) && proto.grtc.Header.toObject(includeInstance, f),
     data: (f = msg.getData()) && proto.grtc.Data.toObject(includeInstance, f),
     end: (f = msg.getEnd()) && proto.grtc.End.toObject(includeInstance, f)
   };
@@ -596,11 +600,16 @@ proto.grtc.Response.deserializeBinaryFromReader = function(msg, reader) {
       msg.setRouting(value);
       break;
     case 2:
+      var value = new proto.grtc.Header;
+      reader.readMessage(value,proto.grtc.Header.deserializeBinaryFromReader);
+      msg.setHeader(value);
+      break;
+    case 3:
       var value = new proto.grtc.Data;
       reader.readMessage(value,proto.grtc.Data.deserializeBinaryFromReader);
       msg.setData(value);
       break;
-    case 3:
+    case 4:
       var value = new proto.grtc.End;
       reader.readMessage(value,proto.grtc.End.deserializeBinaryFromReader);
       msg.setEnd(value);
@@ -642,10 +651,18 @@ proto.grtc.Response.serializeBinaryToWriter = function(message, writer) {
       proto.grtc.Routing.serializeBinaryToWriter
     );
   }
-  f = message.getData();
+  f = message.getHeader();
   if (f != null) {
     writer.writeMessage(
       2,
+      f,
+      proto.grtc.Header.serializeBinaryToWriter
+    );
+  }
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
+      3,
       f,
       proto.grtc.Data.serializeBinaryToWriter
     );
@@ -653,7 +670,7 @@ proto.grtc.Response.serializeBinaryToWriter = function(message, writer) {
   f = message.getEnd();
   if (f != null) {
     writer.writeMessage(
-      3,
+      4,
       f,
       proto.grtc.End.serializeBinaryToWriter
     );
@@ -692,18 +709,48 @@ proto.grtc.Response.prototype.hasRouting = function() {
 
 
 /**
- * optional Data data = 2;
+ * optional Header header = 2;
+ * @return {?proto.grtc.Header}
+ */
+proto.grtc.Response.prototype.getHeader = function() {
+  return /** @type{?proto.grtc.Header} */ (
+    jspb.Message.getWrapperField(this, proto.grtc.Header, 2));
+};
+
+
+/** @param {?proto.grtc.Header|undefined} value */
+proto.grtc.Response.prototype.setHeader = function(value) {
+  jspb.Message.setOneofWrapperField(this, 2, proto.grtc.Response.oneofGroups_[0], value);
+};
+
+
+proto.grtc.Response.prototype.clearHeader = function() {
+  this.setHeader(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.grtc.Response.prototype.hasHeader = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional Data data = 3;
  * @return {?proto.grtc.Data}
  */
 proto.grtc.Response.prototype.getData = function() {
   return /** @type{?proto.grtc.Data} */ (
-    jspb.Message.getWrapperField(this, proto.grtc.Data, 2));
+    jspb.Message.getWrapperField(this, proto.grtc.Data, 3));
 };
 
 
 /** @param {?proto.grtc.Data|undefined} value */
 proto.grtc.Response.prototype.setData = function(value) {
-  jspb.Message.setOneofWrapperField(this, 2, proto.grtc.Response.oneofGroups_[0], value);
+  jspb.Message.setOneofWrapperField(this, 3, proto.grtc.Response.oneofGroups_[0], value);
 };
 
 
@@ -717,23 +764,23 @@ proto.grtc.Response.prototype.clearData = function() {
  * @return {!boolean}
  */
 proto.grtc.Response.prototype.hasData = function() {
-  return jspb.Message.getField(this, 2) != null;
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
 /**
- * optional End end = 3;
+ * optional End end = 4;
  * @return {?proto.grtc.End}
  */
 proto.grtc.Response.prototype.getEnd = function() {
   return /** @type{?proto.grtc.End} */ (
-    jspb.Message.getWrapperField(this, proto.grtc.End, 3));
+    jspb.Message.getWrapperField(this, proto.grtc.End, 4));
 };
 
 
 /** @param {?proto.grtc.End|undefined} value */
 proto.grtc.Response.prototype.setEnd = function(value) {
-  jspb.Message.setOneofWrapperField(this, 3, proto.grtc.Response.oneofGroups_[0], value);
+  jspb.Message.setOneofWrapperField(this, 4, proto.grtc.Response.oneofGroups_[0], value);
 };
 
 
@@ -747,7 +794,151 @@ proto.grtc.Response.prototype.clearEnd = function() {
  * @return {!boolean}
  */
 proto.grtc.Response.prototype.hasEnd = function() {
-  return jspb.Message.getField(this, 3) != null;
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.grtc.Metadata = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.grtc.Metadata, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.grtc.Metadata.displayName = 'proto.grtc.Metadata';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.grtc.Metadata.prototype.toObject = function(opt_includeInstance) {
+  return proto.grtc.Metadata.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.grtc.Metadata} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.grtc.Metadata.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    mdMap: (f = msg.getMdMap()) ? f.toObject(includeInstance, undefined) : []
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.grtc.Metadata}
+ */
+proto.grtc.Metadata.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.grtc.Metadata;
+  return proto.grtc.Metadata.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.grtc.Metadata} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.grtc.Metadata}
+ */
+proto.grtc.Metadata.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = msg.getMdMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "");
+         });
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.grtc.Metadata.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.grtc.Metadata.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.grtc.Metadata} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.grtc.Metadata.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getMdMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(1, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+};
+
+
+/**
+ * map<string, string> md = 1;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.grtc.Metadata.prototype.getMdMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 1, opt_noLazyCreate,
+      null));
+};
+
+
+proto.grtc.Metadata.prototype.clearMdMap = function() {
+  this.getMdMap().clear();
 };
 
 
@@ -798,7 +989,8 @@ proto.grtc.Call.prototype.toObject = function(opt_includeInstance) {
  */
 proto.grtc.Call.toObject = function(includeInstance, msg) {
   var f, obj = {
-    method: jspb.Message.getFieldWithDefault(msg, 1, "")
+    method: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    metadata: (f = msg.getMetadata()) && proto.grtc.Metadata.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -839,6 +1031,11 @@ proto.grtc.Call.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setMethod(value);
       break;
+    case 2:
+      var value = new proto.grtc.Metadata;
+      reader.readMessage(value,proto.grtc.Metadata.deserializeBinaryFromReader);
+      msg.setMetadata(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -875,6 +1072,14 @@ proto.grtc.Call.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getMetadata();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      proto.grtc.Metadata.serializeBinaryToWriter
+    );
+  }
 };
 
 
@@ -890,6 +1095,195 @@ proto.grtc.Call.prototype.getMethod = function() {
 /** @param {string} value */
 proto.grtc.Call.prototype.setMethod = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional Metadata metadata = 2;
+ * @return {?proto.grtc.Metadata}
+ */
+proto.grtc.Call.prototype.getMetadata = function() {
+  return /** @type{?proto.grtc.Metadata} */ (
+    jspb.Message.getWrapperField(this, proto.grtc.Metadata, 2));
+};
+
+
+/** @param {?proto.grtc.Metadata|undefined} value */
+proto.grtc.Call.prototype.setMetadata = function(value) {
+  jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+proto.grtc.Call.prototype.clearMetadata = function() {
+  this.setMetadata(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.grtc.Call.prototype.hasMetadata = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.grtc.Header = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.grtc.Header, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.grtc.Header.displayName = 'proto.grtc.Header';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.grtc.Header.prototype.toObject = function(opt_includeInstance) {
+  return proto.grtc.Header.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.grtc.Header} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.grtc.Header.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    metadata: (f = msg.getMetadata()) && proto.grtc.Metadata.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.grtc.Header}
+ */
+proto.grtc.Header.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.grtc.Header;
+  return proto.grtc.Header.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.grtc.Header} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.grtc.Header}
+ */
+proto.grtc.Header.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 2:
+      var value = new proto.grtc.Metadata;
+      reader.readMessage(value,proto.grtc.Metadata.deserializeBinaryFromReader);
+      msg.setMetadata(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.grtc.Header.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.grtc.Header.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.grtc.Header} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.grtc.Header.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getMetadata();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      proto.grtc.Metadata.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional Metadata metadata = 2;
+ * @return {?proto.grtc.Metadata}
+ */
+proto.grtc.Header.prototype.getMetadata = function() {
+  return /** @type{?proto.grtc.Metadata} */ (
+    jspb.Message.getWrapperField(this, proto.grtc.Metadata, 2));
+};
+
+
+/** @param {?proto.grtc.Metadata|undefined} value */
+proto.grtc.Header.prototype.setMetadata = function(value) {
+  jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+proto.grtc.Header.prototype.clearMetadata = function() {
+  this.setMetadata(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.grtc.Header.prototype.hasMetadata = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -1106,7 +1500,8 @@ proto.grtc.End.prototype.toObject = function(opt_includeInstance) {
  */
 proto.grtc.End.toObject = function(includeInstance, msg) {
   var f, obj = {
-    status: (f = msg.getStatus()) && google_rpc_status_pb.Status.toObject(includeInstance, f)
+    status: (f = msg.getStatus()) && google_rpc_status_pb.Status.toObject(includeInstance, f),
+    trailer: (f = msg.getTrailer()) && proto.grtc.Metadata.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1148,6 +1543,11 @@ proto.grtc.End.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,google_rpc_status_pb.Status.deserializeBinaryFromReader);
       msg.setStatus(value);
       break;
+    case 2:
+      var value = new proto.grtc.Metadata;
+      reader.readMessage(value,proto.grtc.Metadata.deserializeBinaryFromReader);
+      msg.setTrailer(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1185,6 +1585,14 @@ proto.grtc.End.serializeBinaryToWriter = function(message, writer) {
       google_rpc_status_pb.Status.serializeBinaryToWriter
     );
   }
+  f = message.getTrailer();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      proto.grtc.Metadata.serializeBinaryToWriter
+    );
+  }
 };
 
 
@@ -1215,6 +1623,36 @@ proto.grtc.End.prototype.clearStatus = function() {
  */
 proto.grtc.End.prototype.hasStatus = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional Metadata trailer = 2;
+ * @return {?proto.grtc.Metadata}
+ */
+proto.grtc.End.prototype.getTrailer = function() {
+  return /** @type{?proto.grtc.Metadata} */ (
+    jspb.Message.getWrapperField(this, proto.grtc.Metadata, 2));
+};
+
+
+/** @param {?proto.grtc.Metadata|undefined} value */
+proto.grtc.End.prototype.setTrailer = function(value) {
+  jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+proto.grtc.End.prototype.clearTrailer = function() {
+  this.setTrailer(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.grtc.End.prototype.hasTrailer = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 

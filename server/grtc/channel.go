@@ -72,33 +72,40 @@ func (c *channel) onMessage(msg webrtc.DataChannelMessage) {
 	go stream.onRequest(request)
 }
 
-func (c *channel) routeClose(routing *grtc.Routing) {
+func (c *channel) closeStream(routing *grtc.Routing) {
 	c.mu.Lock()
 	delete(c.streams, routing.Sequence)
 	c.mu.Unlock()
 }
 
-func (c *channel) sendData(routing *grtc.Routing, data *grtc.Data) error {
-	response := &grtc.Response{
+func (c *channel) writeHeader(routing *grtc.Routing, header *grtc.Header) error {
+	return c.writeResponse(&grtc.Response{
+		Routing: routing,
+		Type: &grtc.Response_Header{
+			Header: header,
+		},
+	})
+}
+
+func (c *channel) writeData(routing *grtc.Routing, data *grtc.Data) error {
+	return c.writeResponse(&grtc.Response{
 		Routing: routing,
 		Type: &grtc.Response_Data{
 			Data: data,
 		},
-	}
-	return c.sendResponse(response)
+	})
 }
 
-func (c *channel) sendEnd(routing *grtc.Routing, end *grtc.End) error {
-	response := &grtc.Response{
+func (c *channel) writeEnd(routing *grtc.Routing, end *grtc.End) error {
+	return c.writeResponse(&grtc.Response{
 		Routing: routing,
 		Type: &grtc.Response_End{
 			End: end,
 		},
-	}
-	return c.sendResponse(response)
+	})
 }
 
-func (c *channel) sendResponse(response *grtc.Response) error {
+func (c *channel) writeResponse(response *grtc.Response) error {
 	// c.log.WithField("response", response).Info("send")
 
 	data, err := proto.Marshal(response)

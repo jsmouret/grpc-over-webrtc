@@ -8,17 +8,19 @@ import (
 	"google.golang.org/grpc"
 )
 
+type handlerFunc func(s *stream)
+
 // Proxy is the interface to gRPC over WebRTC
 type Proxy struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
-	handlers map[string]newWrapperFunc
+	handlers map[string]handlerFunc
 }
 
 // NewProxy creates a new Proxy
 func NewProxy() *Proxy {
 	p := &Proxy{
-		handlers: make(map[string]newWrapperFunc),
+		handlers: make(map[string]handlerFunc),
 	}
 	p.ctx, p.cancel = context.WithCancel(context.Background())
 	return p
@@ -34,12 +36,12 @@ func (p *Proxy) RegisterService(sd *grpc.ServiceDesc, ss interface{}) {
 	for _, it := range sd.Methods {
 		desc := it
 		path := fmt.Sprintf("/%v/%v", sd.ServiceName, desc.MethodName)
-		p.handlers[path] = newUnaryWrapper(ss, unaryHandler(desc.Handler))
+		p.handlers[path] = unaryHandler(ss, methodHandler(desc.Handler))
 	}
 	for _, it := range sd.Streams {
 		desc := it
 		path := fmt.Sprintf("/%v/%v", sd.ServiceName, desc.StreamName)
-		p.handlers[path] = newStreamWrapper(ss, desc.Handler)
+		p.handlers[path] = streamHandler(ss, desc.Handler)
 	}
 }
 

@@ -1,6 +1,5 @@
+import { Status } from 'grpc-web'
 import React, { useState } from 'react'
-import { adapter } from './grtc/adapter'
-import { WebRtcChannel } from './grtc/webrtcchannel'
 import { EchoServicePromiseClient } from './protos/echo/echo_grpc_web_pb'
 import { EchoRequest, Empty, ServerStreamingEchoRequest } from './protos/echo/echo_pb'
 
@@ -28,14 +27,22 @@ const codeToString = (code: number) => {
 }
 
 export const EchoClient: React.FC<{
-	channel: WebRtcChannel
+	client: EchoServicePromiseClient
 	log: (...messages: string[]) => void
-}> = ({ channel, log }) => {
+}> = ({ client, log }) => {
 
-	const [client] = useState(adapter(channel, new EchoServicePromiseClient("")))
 	const [message, setMessage] = useState("hello")
 	const [messageCount, setMessageCount] = useState(5)
 	const [messageInterval, setMessageInterval] = useState(1000)
+
+	const logStatus = (prefix: string, status: Status) => {
+		log(prefix, " status ", codeToString(status.code), ": '", status.details, "'")
+		if (status.metadata) {
+			Object.keys(status.metadata).forEach(key =>
+				log(prefix, " metadata[", key, "]='", status.metadata![key])
+			)
+		}
+	}
 
 	const logException = (prefix: string, e: any) =>
 		log(prefix, " exception:\n> ", codeToString(e.code), ": ", e.message)
@@ -87,7 +94,7 @@ export const EchoClient: React.FC<{
 
 			const stream = client.serverStreamingEcho(request)
 			stream.on('data', response => log("serverStreamingEcho data: ", response.getMessage()))
-			stream.on('status', status => log("serverStreamingEcho status ", codeToString(status.code), ": '", status.details, "'"))
+			stream.on('status', status => logStatus("serverStreamingEcho", status))
 			stream.on('error', err => log("serverStreamingEcho error ", codeToString(err.code), ": '", err.message, "'"))
 			stream.on('end', () => log("serverStreamingEcho end"))
 
@@ -105,7 +112,7 @@ export const EchoClient: React.FC<{
 
 			const stream = client.serverStreamingEchoAbort(request)
 			stream.on('data', response => log("serverStreamingEchoAbort data: ", response.getMessage()))
-			stream.on('status', status => log("serverStreamingEchoAbort status ", codeToString(status.code), ": '", status.details, "'"))
+			stream.on('status', status => logStatus("serverStreamingEchoAbort", status))
 			stream.on('error', err => log("serverStreamingEchoAbort error ", codeToString(err.code), ": '", err.message, "'"))
 			stream.on('end', () => log("serverStreamingEchoAbort end"))
 
