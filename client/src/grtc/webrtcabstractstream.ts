@@ -1,7 +1,7 @@
 import { Metadata, StatusCode } from "grpc-web"
 import "webrtc-adapter"
 import { Status } from "../protos/google/rpc/status_pb"
-import * as pb from "../protos/grtc/grtc_pb"
+import * as grtc from "../protos/grtc/grtc_pb"
 import { WebRtcChannel } from "./webrtcchannel"
 
 export abstract class WebRtcAbstractStream {
@@ -13,31 +13,31 @@ export abstract class WebRtcAbstractStream {
 	}
 
 	channel: WebRtcChannel
-	routing: pb.Routing
+	routing: grtc.Routing
 
 	close() {
 		this.channel.remove(this)
 	}
 
 	sendCall(method: string, metadata: Metadata) {
-		const call = new pb.Call()
+		const call = new grtc.Call()
 		call.setMethod(method)
 
-		const request = new pb.Request()
+		const request = new grtc.Request()
 		request.setRouting(this.routing)
 		request.setCall(call)
 		this.channel.send(request)
 	}
 
-	sendData(data: pb.Data) {
-		const request = new pb.Request()
+	sendData(data: grtc.Data) {
+		const request = new grtc.Request()
 		request.setRouting(this.routing)
 		request.setData(data)
 		this.channel.send(request)
 	}
 
-	sendEnd(end: pb.End) {
-		const request = new pb.Request()
+	sendEnd(end: grtc.End) {
+		const request = new grtc.Request()
 		request.setRouting(this.routing)
 		request.setEnd(end)
 		this.channel.send(request)
@@ -47,12 +47,12 @@ export abstract class WebRtcAbstractStream {
 		const status = new Status()
 		status.setCode(statusCode)
 		status.setMessage(message)
-		const end = new pb.End()
+		const end = new grtc.End()
 		end.setStatus(status)
 		this.sendEnd(end)
 	}
 
-	abstract onData(data: pb.Data): void
-	abstract onEnd(end: pb.End): void
+	abstract onData(data: grtc.Data): void
+	abstract onEnd(end: grtc.End): void
 	abstract onError(statusCode: number, message: string): void
 }
