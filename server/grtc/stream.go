@@ -3,6 +3,7 @@ package grtc
 import (
 	"context"
 	"errors"
+	"io"
 	"server/protos/grtc"
 
 	"github.com/golang/protobuf/proto"
@@ -21,15 +22,16 @@ var (
 )
 
 type stream struct {
-	ctx      context.Context
-	cancel   context.CancelFunc
-	channel  *channel
-	routing  *grtc.Routing
-	log      *logrus.Entry
-	recv     chan []byte
-	hasBegun bool
-	header   metadata.MD
-	trailer  metadata.MD
+	ctx       context.Context
+	cancel    context.CancelFunc
+	channel   *channel
+	routing   *grtc.Routing
+	log       *logrus.Entry
+	recvRead  <-chan []byte
+	recvWrite chan<- []byte
+	hasBegun  bool
+	header    metadata.MD
+	trailer   metadata.MD
 }
 
 func newStream(channel *channel, routing *grtc.Routing, log *logrus.Entry) *stream {
@@ -37,25 +39,30 @@ func newStream(channel *channel, routing *grtc.Routing, log *logrus.Entry) *stre
 		channel: channel,
 		routing: routing,
 		log:     log,
-		recv:    make(chan []byte, 1),
 	}
 	s.ctx, s.cancel = context.WithCancel(channel.ctx)
+	recv := make(chan []byte, 1)
+	s.recvRead = recv
+	s.recvWrite = recv
 	return s
 }
 
-func (s *stream) close() {
+func (s *stream) done() {
 	s.cancel()
-	s.channel.closeStream(s.routing)
+	s.channel.remove(s.routing)
 }
 
 func (s *stream) onRequest(request *grtc.Request) {
 	switch r := request.Type.(type) {
 	case *grtc.Request_Call:
+		// s.log.WithField("call", r.Call).Info("recv call")
 		s.processCall(r.Call)
 	case *grtc.Request_Data:
-		s.recv <- r.Data.Data
+		// s.log.WithField("data", r.Data).Info("recv data")
+		s.processData(r.Data)
 	case *grtc.Request_End:
-		s.close()
+		// s.log.WithField("end", r.End).Info("recv end")
+		s.processEnd(r.End)
 	}
 }
 
@@ -64,10 +71,29 @@ func (s *stream) processCall(call *grtc.Call) {
 
 	handlerFunc, ok := s.channel.proxy.handlers[call.Method]
 	if !ok {
-		s.closeErr(status.Error(codes.Unimplemented, codes.Unimplemented.String()))
+		s.close(status.Error(codes.Unimplemented, codes.Unimplemented.String()))
 		return
 	}
 	go handlerFunc(s)
+}
+
+func (s *stream) processData(data *grtc.Data) {
+	if s.recvWrite == nil {
+		s.log.Error("data received after client closeSend")
+		return
+	}
+	s.recvWrite <- data.Data
+}
+
+func (s *stream) processEnd(end *grtc.End) {
+	if end.Status != nil {
+		// s.log.WithField("status", end.Status).Info("cancel")
+		s.done()
+	} else {
+		// s.log.Info("closeSend")
+		close(s.recvWrite)
+		s.recvWrite = nil
+	}
 }
 
 func makeMetadata(md metadata.MD) *grtc.Metadata {
@@ -85,13 +111,13 @@ func makeMetadata(md metadata.MD) *grtc.Metadata {
 	}
 }
 
-func (s *stream) closeErr(err error) {
+func (s *stream) close(err error) {
 	s.beginMaybe()
 	s.channel.writeEnd(s.routing, &grtc.End{
 		Status:  status.Convert(err).Proto(),
 		Trailer: makeMetadata(s.trailer),
 	})
-	s.close()
+	s.done()
 }
 
 func (s *stream) beginMaybe() error {
@@ -171,7 +197,7 @@ func (s *stream) Context() context.Context {
 func (s *stream) SendMsg(m interface{}) (err error) {
 	defer func() {
 		if err != nil {
-			s.closeErr(err)
+			s.close(err)
 		}
 	}()
 
@@ -199,7 +225,10 @@ func (s *stream) RecvMsg(m interface{}) error {
 	select {
 	case <-s.ctx.Done():
 		return s.ctx.Err()
-	case bytes := <-s.recv:
-		return proto.Unmarshal(bytes, m.(proto.Message))
+	case bytes, ok := <-s.recvRead:
+		if ok {
+			return proto.Unmarshal(bytes, m.(proto.Message))
+		}
+		return io.EOF
 	}
 }

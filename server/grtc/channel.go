@@ -72,7 +72,7 @@ func (c *channel) onMessage(msg webrtc.DataChannelMessage) {
 	go stream.onRequest(request)
 }
 
-func (c *channel) closeStream(routing *grtc.Routing) {
+func (c *channel) remove(routing *grtc.Routing) {
 	c.mu.Lock()
 	delete(c.streams, routing.Sequence)
 	c.mu.Unlock()
@@ -106,7 +106,7 @@ func (c *channel) writeEnd(routing *grtc.Routing, end *grtc.End) error {
 }
 
 func (c *channel) writeResponse(response *grtc.Response) error {
-	// c.log.WithField("response", response).Info("send")
+	c.log.WithField("response", response).Info("send")
 
 	data, err := proto.Marshal(response)
 	if err != nil {
