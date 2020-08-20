@@ -43,7 +43,7 @@ export abstract class WebRtcAbstractClient {
 
 	sendEndStatus(code = grpc.Code.OK, message: string = "") {
 		const end = new grtc.End()
-		if (code != grpc.Code.OK) {
+		if (code !== grpc.Code.OK) {
 			const status = new pbs.Status()
 			status.setCode(code)
 			status.setMessage(message)
