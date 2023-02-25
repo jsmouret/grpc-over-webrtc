@@ -12,7 +12,7 @@ require (
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.0 // indirect
-	golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
+	golang.org/x/net v0.7.0
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
 	google.golang.org/grpc v1.29.1
 )
